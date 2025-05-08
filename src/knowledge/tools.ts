@@ -15,24 +15,12 @@ export const tools: ToolDefinition[] = [
           type: "string",
           description: "Human-readable description of the knowledge source",
         },
-        type: {
+        path: {
           type: "string",
-          description: "Type of the knowledge source (e.g., website)",
-        },
-        options: {
-          type: "object",
-          properties: {
-            url: {
-              type: "string",
-              description: "URL of the website (for website type)",
-            },
-          },
-          required: ["url"],
-          description:
-            "Options for the knowledge source (e.g., url for website)",
+          description: "OneDrive folder or file path to ingest",
         },
       },
-      required: ["name", "description", "type", "options"],
+      required: ["name", "description", "path"],
     },
     annotations: {
       title: "Add Knowledge",
@@ -117,35 +105,22 @@ export const tools: ToolDefinition[] = [
   },
   {
     name: "refresh-knowledge-source",
-    description: "Refresh the documents in a knowledge source",
+    description:
+      "Refresh a knowledge source by re-ingesting its original content from the source (e.g., OneDrive).",
     inputSchema: {
       type: "object" as const,
       properties: {
+        knowledgeSourceId: {
+          type: "string",
+          description: "ID of the knowledge source to refresh",
+        },
         name: {
           type: "string",
-          description: "Name of the knowledge source to refresh",
-        },
-        documents: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              content: {
-                type: "string",
-                description: "The content of the document",
-              },
-              metadata: {
-                type: "object",
-                description: "Optional metadata about the document",
-                additionalProperties: true,
-              },
-            },
-            required: ["content"],
-          },
-          description: "Array of documents to update in the knowledge source",
+          description:
+            "(Optional) Name of the knowledge source (for display/logging)",
         },
       },
-      required: ["name", "documents"],
+      required: ["knowledgeSourceId"],
     },
     annotations: {
       title: "Refresh Knowledge Source",
@@ -198,4 +173,114 @@ export const tools: ToolDefinition[] = [
       },
     },
   },
+  {
+    name: "search-onedrive-files",
+    description: "Search for files in the user's OneDrive account.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        query: {
+          type: "string",
+          description: "Search query for file names or contents.",
+        },
+        path: {
+          type: "string",
+          description: "(Optional) OneDrive folder path to search within.",
+          nullable: true,
+        },
+        limit: {
+          type: "number",
+          description: "Maximum number of results to return.",
+          nullable: true,
+        },
+      },
+      required: ["query"],
+    },
+    handler: {
+      type: "knowledge",
+      config: {
+        action: "search-onedrive-files",
+      },
+    },
+  },
+  {
+    name: "retrieve-onedrive-file",
+    description:
+      "Retrieve and extract text from a file in the user's OneDrive account.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        fileId: {
+          type: "string",
+          description: "The OneDrive file ID to retrieve.",
+        },
+        maxLength: {
+          type: "number",
+          description: "Maximum number of characters to extract from the file.",
+          nullable: true,
+        },
+      },
+      required: ["fileId"],
+    },
+    handler: {
+      type: "knowledge",
+      config: {
+        action: "retrieve-onedrive-file",
+      },
+    },
+  },
+  {
+    name: "delete-knowledge-source",
+    description: "Delete a knowledge source and all its data",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        name: { type: "string", description: "Name of the knowledge source" },
+      },
+      required: ["name"],
+    },
+    annotations: {
+      title: "Delete Knowledge Source",
+      destructiveHint: true,
+    },
+    handler: {
+      type: "knowledge",
+      config: { action: "delete-knowledge-source" },
+    },
+  },
+  {
+    name: "list-knowledge-sources",
+    description:
+      "List available knowledge sources, optionally filtered by name.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        nameContains: {
+          type: "string",
+          description:
+            "Filter knowledge sources by name substring (case-insensitive)",
+        },
+        limit: {
+          type: "number",
+          description: "Maximum number of sources to return",
+          default: 10,
+        },
+      },
+      required: [],
+    },
+    annotations: {
+      title: "List Knowledge Sources",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
+    handler: {
+      type: "knowledge",
+      config: {
+        action: "list-knowledge-sources",
+      },
+    },
+  },
+  // TODO: Define OneDrive-only tools here (search-onedrive-files, retrieve-onedrive-file, etc.)
 ];

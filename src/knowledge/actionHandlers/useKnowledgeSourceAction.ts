@@ -1,6 +1,6 @@
 import { HandlerOutput, SessionInfo, ToolDefinition } from "dynamic-mcp-server";
-import { KnowledgeService } from "./KnowledgeService.js";
-import { KnowledgeActionConfig } from "./types.js";
+import { KnowledgeService } from "../KnowledgeService.js";
+import { KnowledgeActionConfig } from "../types.js";
 
 export async function handleUseKnowledgeSourceAction(
   args: Record<string, any>,
@@ -20,7 +20,6 @@ export async function handleUseKnowledgeSourceAction(
   }
 
   const knowledgeService = new KnowledgeService();
-  await knowledgeService.initialize();
 
   try {
     // Get the knowledge source to verify it exists

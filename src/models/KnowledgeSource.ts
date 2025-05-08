@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 export interface IKnowledgeSource {
   name: string;
   description: string;
-  sourceType: "website" | "onedrive";
+  sourceType: "onedrive";
   sourceUrl: string;
   createdBy: string; // References User.email
   createdAt: Date;
@@ -23,7 +23,7 @@ const knowledgeSourceSchema = new mongoose.Schema<IKnowledgeSource>(
     sourceType: {
       type: String,
       required: true,
-      enum: ["website", "onedrive"],
+      enum: ["onedrive"],
     },
     sourceUrl: { type: String, required: true },
     createdBy: { type: String, required: true, ref: "User" }, // References User.email

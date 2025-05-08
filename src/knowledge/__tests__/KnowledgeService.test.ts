@@ -112,7 +112,6 @@ describe("KnowledgeService", () => {
 
     // Create and initialize service
     service = new KnowledgeService();
-    await service.initialize();
   }, 30000);
 
   describe("addKnowledgeSource", () => {
@@ -315,3 +314,5 @@ describe("KnowledgeService", () => {
     }, 10000);
   });
 });
+
+// TODO: Update tests for OneDrive-only implementation. Remove embedJs and website-related tests.

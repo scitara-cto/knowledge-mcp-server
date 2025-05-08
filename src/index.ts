@@ -1,6 +1,7 @@
 import { DynamicMcpServer, logger } from "dynamic-mcp-server";
 import knowledgeHandler from "./knowledge/index.js";
 import { connectToDatabase } from "./db/connection.js";
+import { startHttpServer } from "./http/httpServer.js";
 
 // Setup server with knowledge handler
 const server = new DynamicMcpServer({
@@ -17,9 +18,12 @@ async function startServer() {
     // Connect to database first
     await connectToDatabase();
 
-    // Then start the server
+    // Then start the MCP server
     await server.start();
     logger.info("Knowledge MCP Server started");
+
+    // Start HTTP server for OAuth and HTTP endpoints
+    startHttpServer();
   } catch (error) {
     logger.error("Failed to start server:", error);
     process.exit(1);

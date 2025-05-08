@@ -1,11 +1,15 @@
 import { HandlerOutput, SessionInfo, logger } from "dynamic-mcp-server";
 import { tools as knowledgeTools } from "./tools.js";
-import { handleAddKnowledgeAction } from "./addKnowledgeAction.js";
-import { handleSearchAction } from "./searchAction.js";
-import { handleUseKnowledgeSourceAction } from "./useKnowledgeSourceAction.js";
-import { handleRefreshKnowledgeSourceAction } from "./refreshKnowledgeSourceAction.js";
-import { handleShareKnowledgeSourceAction } from "./shareKnowledgeSourceAction.js";
+import { handleAddKnowledgeAction } from "./actionHandlers/addKnowledgeAction.js";
+import { handleSearchAction } from "./actionHandlers/searchAction.js";
+import { handleUseKnowledgeSourceAction } from "./actionHandlers/useKnowledgeSourceAction.js";
+import { handleRefreshKnowledgeSourceAction } from "./actionHandlers/refreshKnowledgeSourceAction.js";
+import { handleShareKnowledgeSourceAction } from "./actionHandlers/shareKnowledgeSourceAction.js";
 import { KnowledgeActionConfig } from "./types.js";
+import searchOnedriveFilesAction from "./actionHandlers/searchOnedriveFilesAction.js";
+import retrieveOnedriveFileAction from "./actionHandlers/retrieveOnedriveFileAction.js";
+import { handleDeleteKnowledgeSourceAction } from "./actionHandlers/deleteKnowledgeSourceAction.js";
+import { handleListKnowledgeSourcesAction } from "./actionHandlers/listKnowledgeSourcesAction.js";
 
 const actionHandlers: Record<
   string,
@@ -20,6 +24,10 @@ const actionHandlers: Record<
   "use-knowledge-source": handleUseKnowledgeSourceAction,
   "refresh-knowledge-source": handleRefreshKnowledgeSourceAction,
   "share-knowledge-source": handleShareKnowledgeSourceAction,
+  "search-onedrive-files": searchOnedriveFilesAction,
+  "retrieve-onedrive-file": retrieveOnedriveFileAction,
+  "delete-knowledge-source": handleDeleteKnowledgeSourceAction,
+  "list-knowledge-sources": handleListKnowledgeSourcesAction,
 };
 
 /**

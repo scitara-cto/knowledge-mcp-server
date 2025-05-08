@@ -112,7 +112,6 @@ describe("Knowledge Action Handlers", () => {
 
     // Create and initialize service
     service = new KnowledgeService();
-    await service.initialize();
   }, 30000);
 
   describe("addKnowledgeSource", () => {

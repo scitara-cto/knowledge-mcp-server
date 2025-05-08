@@ -12,6 +12,11 @@ export interface IUser {
     accessLevel: "read" | "write";
     sharedAt: Date;
   }[];
+  microsoftAuth?: {
+    accessToken: string;
+    refreshToken: string;
+    expiresAt: Date;
+  };
 }
 
 const userSchema = new mongoose.Schema<IUser>(
@@ -27,10 +32,14 @@ const userSchema = new mongoose.Schema<IUser>(
         sharedAt: { type: Date, default: Date.now },
       },
     ],
+    microsoftAuth: {
+      accessToken: { type: String },
+      refreshToken: { type: String },
+      expiresAt: { type: Date },
+    },
   },
   { timestamps: true },
 );
-
 
 // Add a virtual 'id' field that maps to '_id'
 userSchema.virtual("id").get(function (this: any) {

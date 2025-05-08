@@ -4,78 +4,74 @@ This document outlines the step-by-step plan to migrate the codebase from embedJ
 
 ## Phase 1: Clean Slate & Tool/Handler Scaffolding
 
-1. **Remove all embedJs-dependent code**
+**Status:** ✅ Complete
 
-   - Delete or comment out all code in `KnowledgeService`, action handlers, and related modules that references embedJs, website sources, or loaders.
-   - Remove embedJs-related imports and configuration.
-
-2. **Scaffold new tool definitions and action handlers**
-   - Define tools in `tools.ts` for:
-     - `search-onedrive-files`
-     - `retrieve-onedrive-file`
-     - (and any other OneDrive-specific tools from the spec)
-   - Create empty action handler files for each tool (e.g., `searchOnedriveFilesAction.ts`, `retrieveOnedriveFileAction.ts`).
-   - Wire these handlers into the main knowledge handler and tool registry.
+- All embedJs and website code removed.
+- OneDrive-only tool definitions and action handler scaffolding in place.
+- Codebase builds and tests run (failures expected for unimplemented stubs).
 
 ---
 
-## Phase 2: Microsoft Graph/OneDrive Authentication Flow
+## Phase 2a: Express Server Setup
 
-3. **Implement Microsoft Graph authentication utilities**
+**Status:** ✅ Complete
 
-   - Utility to generate the OAuth2 authorization URL.
-   - Express route to receive the OAuth2 callback and exchange code for tokens.
-   - Utility to store tokens in the user's record (using the user repository).
-   - Utility to check token validity and refresh as needed.
-
-4. **Integrate authentication into tool action handlers**
-   - In each OneDrive tool handler, check for a valid token before making any Graph API call.
-   - If no valid token, return an error with the authorization URL for the user to complete the flow.
+- HTTP server logic modularized and uses KNOWLEDGE_HTTP_PORT.
+- /health endpoint and OneDrive OAuth router mounted.
+- Main entrypoint starts both MCP and HTTP servers in one process.
 
 ---
 
-## Phase 3: Implement Basic OneDrive Tools
+## Phase 2b: Microsoft Graph/OneDrive Authentication Flow
 
-5. **Implement `search-onedrive-files` tool**
+**Status:** ✅ Complete
 
-   - Use the Microsoft Graph API to list/search files in a given OneDrive path.
-   - Return file metadata (name, path, size, last modified).
+- Microsoft Graph OAuth utilities implemented (msAuth.ts).
+- User model and repository updated to support microsoftAuth tokens.
+- Express routes for /onedrive/oauth/start and /onedrive/oauth/callback implemented and type-safe.
+- End-to-end OAuth flow ready for testing.
 
-6. **Implement `retrieve-onedrive-file` tool**
+---
 
-   - Use the Microsoft Graph API to download a file by path or ID.
-   - Use `officeParser` to extract text from the file buffer.
-   - Return the extracted text (with length limit).
+## Phase 3: Basic OneDrive Tools & File Text Extraction
 
-7. **Test the full authentication and file access flow**
-   - Simulate a user requesting a OneDrive tool with no token.
-   - Ensure the system returns an auth URL, receives the callback, stores tokens, and can then access files.
+**Status:** ✅ Complete
+
+- OAuth flow works end-to-end.
+- File search and retrieval are functional and user-friendly.
+- Text extraction from Office, PDF, and plain text files is implemented and tested.
+- Tool responses are user-friendly and consistent.
 
 ---
 
 ## Phase 4: Vector Database & Knowledge Source Management
 
-8. **Implement knowledge source creation**
+**Status:** ⏳ In Progress
 
-   - Enumerate files from a OneDrive path, extract text, chunk, embed, and store in MongoDB.
-
-9. **Implement search over vector database**
-
-   - Query MongoDB for vectors by knowledge source ID and similarity.
-
-10. **Implement refresh, share, and other advanced actions as per the spec.**
+- Implement knowledge source creation: enumerate files, extract text, chunk, embed, and store in MongoDB. ✅
+- Implement listing of knowledge sources with filtering and pagination. ✅
+- Implement deletion of knowledge sources and all associated embeddings. ✅
+- Implement search over vector database: query MongoDB for vectors by knowledge source ID and similarity, with support for pagination (limit/skip), minimum similarity score (minScore), total count, and nextSteps guidance. ✅
+- Implement refresh, share, and other advanced actions as per the spec. ⏳
 
 ---
 
-## Summary Table
+## Summary Table (Updated)
 
-| Phase | Focus                         | Key Actions                                                              |
-| ----- | ----------------------------- | ------------------------------------------------------------------------ |
-| 1     | Clean Slate & Scaffolding     | Remove embedJs code, add new tool/action handler scaffolding             |
-| 2     | Auth Flow                     | Implement Graph auth, token storage, callback, and validation            |
-| 3     | Basic OneDrive Tools          | Implement and test file search/retrieve tools and their handlers         |
-| 4     | Vector DB & Knowledge Sources | Implement knowledge source creation, vector search, refresh, share, etc. |
+| Phase | Focus                             | Key Actions                                                                                                               | Status         |
+| ----- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| 1     | Clean Slate & Scaffolding         | Remove embedJs code, add new tool/action handler scaffolding                                                              | ✅ Done        |
+| 2a    | Express Server Setup              | Add Express server, health check, mount OAuth router                                                                      | ✅ Done        |
+| 2b    | Auth Flow                         | Implement Graph auth, token storage, callback, and validation                                                             | ✅ Done        |
+| 3     | Basic OneDrive Tools & Extraction | Implement and test file search/retrieve tools, text extraction                                                            | ✅ Done        |
+| 4     | Vector DB & Knowledge Sources     | Add knowledge source creation, listing, deletion, search (with pagination/minScore), refresh, share, and advanced actions | ⏳ In Progress |
 
 ---
 
 This plan should be followed sequentially to ensure a smooth migration and implementation of the new OneDrive-only Knowledge MCP Server.
+
+---
+
+**Next Step:**
+
+The next major features to implement are refresh, share, and other advanced actions as per the specification. The search functionality (including pagination, minScore, total count, and nextSteps) is now complete and fully functional.

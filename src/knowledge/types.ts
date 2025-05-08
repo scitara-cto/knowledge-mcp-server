@@ -3,7 +3,8 @@ export type KnowledgeAction =
   | "search"
   | "use-knowledge-source"
   | "refresh-knowledge-source"
-  | "share-knowledge-source";
+  | "share-knowledge-source"
+  | "list-knowledge-sources";
 
 export type KnowledgeActionConfig = {
   action: KnowledgeAction;

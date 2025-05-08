@@ -12,6 +12,19 @@ export class KnowledgeSourceRepository {
     return doc.toJSON();
   }
 
+  async findByNameAndUser(
+    name: string,
+    createdBy: string,
+  ): Promise<IKnowledgeSource | null> {
+    const doc = await KnowledgeSource.findOne({ name, createdBy });
+    return doc ? doc.toJSON() : null;
+  }
+
+  async deleteByNameAndUser(name: string, createdBy: string): Promise<boolean> {
+    const result = await KnowledgeSource.deleteOne({ name, createdBy });
+    return result.deletedCount > 0;
+  }
+
   async create(
     knowledgeSource: Partial<IKnowledgeSource>,
   ): Promise<IKnowledgeSource> {

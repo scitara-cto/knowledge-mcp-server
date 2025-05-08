@@ -1,6 +1,6 @@
 import { HandlerOutput, SessionInfo } from "dynamic-mcp-server";
-import { KnowledgeService } from "./KnowledgeService.js";
-import { KnowledgeActionConfig } from "./types.js";
+import { KnowledgeService } from "../KnowledgeService.js";
+import { KnowledgeActionConfig } from "../types.js";
 
 export async function handleShareKnowledgeSourceAction(
   args: Record<string, any>,
@@ -18,7 +18,6 @@ export async function handleShareKnowledgeSourceAction(
   }
 
   const knowledgeService = new KnowledgeService();
-  await knowledgeService.initialize();
 
   try {
     await knowledgeService.shareKnowledgeSource(
