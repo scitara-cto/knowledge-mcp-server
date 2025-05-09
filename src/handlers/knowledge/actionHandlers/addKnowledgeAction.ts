@@ -7,8 +7,8 @@ import {
 import { extractTextFromBuffer } from "../utils/extractText.js";
 import { chunkText } from "../utils/chunkText.js";
 import { embedTextsOpenAI } from "../utils/embedText.js";
-import { KnowledgeSourceRepository } from "../../repositories/KnowledgeSourceRepository.js";
-import { EmbeddedChunkRepository } from "../../repositories/EmbeddedChunkRepository.js";
+import { KnowledgeSourceRepository } from "../../../db/models/repositories/KnowledgeSourceRepository.js";
+import { EmbeddedChunkRepository } from "../../../db/models/repositories/EmbeddedChunkRepository.js";
 import path from "path";
 
 const PLAIN_TEXT_MIMETYPES = [

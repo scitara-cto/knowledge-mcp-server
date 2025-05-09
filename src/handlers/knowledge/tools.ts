@@ -74,20 +74,27 @@ export const tools: ToolDefinition[] = [
   },
   {
     name: "use-knowledge-source",
-    description: "Create a specialized tool for a specific knowledge source",
+    description:
+      "Create a specialized tool for a specific knowledge source. To use this, first call the list-knowledge-sources tool to retrieve available sources and their details. Then, provide a user-friendly toolName (e.g., 'search-acme-co') and a toolDescription (e.g., 'Use this tool to find information on Acme Co.') that clearly describe the tool's purpose.",
     inputSchema: {
       type: "object" as const,
       properties: {
-        name: {
+        knowledgeSourceId: {
           type: "string",
-          description: "Name of the knowledge source to create a tool for",
+          description: "ID of the knowledge source to create a tool for",
         },
-        description: {
+        toolName: {
           type: "string",
-          description: "Description of what the specialized tool does",
+          description:
+            "A clear, user-friendly name for the new tool (e.g., 'search-acme-co').",
+        },
+        toolDescription: {
+          type: "string",
+          description:
+            "A description explaining what the tool does (e.g., 'Use this tool to find information on Acme Co.').",
         },
       },
-      required: ["name", "description"],
+      required: ["knowledgeSourceId", "toolName", "toolDescription"],
     },
     annotations: {
       title: "Use Knowledge Source",

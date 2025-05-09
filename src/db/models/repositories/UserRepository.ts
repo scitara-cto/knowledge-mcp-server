@@ -1,4 +1,4 @@
-import { User, IUser } from "../models/User.js";
+import { User, IUser } from "../User.js";
 
 export class UserRepository {
   async findByEmail(email: string): Promise<IUser> {

@@ -1,7 +1,7 @@
 import { HandlerOutput, SessionInfo } from "dynamic-mcp-server";
 import { KnowledgeActionConfig } from "../types.js";
-import { KnowledgeSourceRepository } from "../../repositories/KnowledgeSourceRepository.js";
-import { EmbeddedChunkRepository } from "../../repositories/EmbeddedChunkRepository.js";
+import { KnowledgeSourceRepository } from "../../../db/models/repositories/KnowledgeSourceRepository.js";
+import { EmbeddedChunkRepository } from "../../../db/models/repositories/EmbeddedChunkRepository.js";
 import { handleAddKnowledgeAction } from "./addKnowledgeAction.js";
 
 export async function handleRefreshKnowledgeSourceAction(

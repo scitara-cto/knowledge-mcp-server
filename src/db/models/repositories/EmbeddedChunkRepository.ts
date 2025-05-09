@@ -1,4 +1,4 @@
-import { EmbeddedChunk, IEmbeddedChunk } from "../models/EmbeddedChunk.js";
+import { EmbeddedChunk, IEmbeddedChunk } from "../EmbeddedChunk.js";
 
 export class EmbeddedChunkRepository {
   async insertMany(chunks: IEmbeddedChunk[]): Promise<void> {

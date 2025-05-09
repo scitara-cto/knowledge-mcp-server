@@ -1,4 +1,4 @@
-import { UserRepository } from "../../repositories/UserRepository.js";
+import { UserRepository } from "../../../db/models/repositories/UserRepository.js";
 
 const HTTP_PORT = process.env.KNOWLEDGE_HTTP_PORT || 3000;
 const MS_REDIRECT_URI = `http://localhost:${HTTP_PORT}/onedrive/oauth/callback`;

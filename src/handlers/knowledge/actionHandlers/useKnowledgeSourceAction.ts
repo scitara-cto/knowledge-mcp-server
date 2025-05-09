@@ -7,11 +7,11 @@ export async function handleUseKnowledgeSourceAction(
   context: SessionInfo,
   actionConfig: KnowledgeActionConfig,
 ): Promise<HandlerOutput> {
-  const { name, description } = args;
+  const { knowledgeSourceId, toolName, toolDescription } = args;
 
-  if (!name || !description) {
+  if (!knowledgeSourceId || !toolName || !toolDescription) {
     throw new Error(
-      "Missing required parameters: name and description are required",
+      "Missing required parameters: knowledgeSourceId, toolName, and toolDescription are required",
     );
   }
 
@@ -23,21 +23,31 @@ export async function handleUseKnowledgeSourceAction(
 
   try {
     // Get the knowledge source to verify it exists
-    const knowledgeSource = await knowledgeService.getKnowledgeSource(name);
+    const knowledgeSource = await knowledgeService.getKnowledgeSource(
+      knowledgeSourceId,
+    );
     if (!knowledgeSource) {
-      throw new Error(`Knowledge source "${name}" not found`);
+      throw new Error(
+        `Knowledge source with ID '${knowledgeSourceId}' not found`,
+      );
+    }
+
+    // Check for duplicate tool name
+    const existingTool = context.mcpServer.toolGenerator.getTool(toolName);
+    if (existingTool) {
+      throw new Error(`A tool with the name '${toolName}' already exists.`);
     }
 
     // Create a specialized tool for this knowledge source
     const toolDefinition: ToolDefinition = {
-      name: `search-${name.toLowerCase().replace(/\s+/g, "-")}`,
-      description: `Search for information about ${name}. ${description}`,
+      name: toolName,
+      description: toolDescription,
       inputSchema: {
         type: "object" as const,
         properties: {
           query: {
             type: "string",
-            description: `What would you like to know about ${name}?`,
+            description: `What would you like to know about ${knowledgeSource.name}?`,
           },
           limit: {
             type: "number",
@@ -48,7 +58,7 @@ export async function handleUseKnowledgeSourceAction(
         required: ["query"],
       },
       annotations: {
-        title: `Search ${name}`,
+        title: `Search ${knowledgeSource.name}`,
         readOnlyHint: true,
         destructiveHint: false,
         idempotentHint: true,
@@ -58,8 +68,7 @@ export async function handleUseKnowledgeSourceAction(
         type: "knowledge",
         config: {
           action: "search",
-          knowledgeSourceId: name,
-          successMessage: `Found information about ${name}`,
+          knowledgeSourceId,
         },
       },
     };
@@ -70,7 +79,7 @@ export async function handleUseKnowledgeSourceAction(
     return {
       result: {
         toolDefinition,
-        message: `Created new tool for knowledge source "${name}"`,
+        message: `Created new tool '${toolName}' for knowledge source '${knowledgeSource.name}'`,
       },
     };
   } catch (error) {

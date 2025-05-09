@@ -1,7 +1,4 @@
-import {
-  KnowledgeSource,
-  IKnowledgeSource,
-} from "../models/KnowledgeSource.js";
+import { KnowledgeSource, IKnowledgeSource } from "../KnowledgeSource.js";
 
 export class KnowledgeSourceRepository {
   async findById(id: string): Promise<IKnowledgeSource> {

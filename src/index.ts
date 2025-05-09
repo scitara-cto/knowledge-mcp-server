@@ -1,5 +1,5 @@
 import { DynamicMcpServer, logger } from "dynamic-mcp-server";
-import knowledgeHandler from "./knowledge/index.js";
+import knowledgeHandler from "./handlers/knowledge/index.js";
 import { connectToDatabase } from "./db/connection.js";
 import { startHttpServer } from "./http/httpServer.js";
 

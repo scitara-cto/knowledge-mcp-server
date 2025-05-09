@@ -3,7 +3,7 @@ import {
   getMicrosoftAuthUrl,
   exchangeCodeForTokens,
   storeMicrosoftTokens,
-} from "../knowledge/microsoft_graph/msAuth.js";
+} from "../handlers/knowledge/microsoft_graph/msAuth.js";
 
 const router = express.Router();
 

@@ -1,6 +1,6 @@
 import { HandlerOutput, SessionInfo } from "dynamic-mcp-server";
 import { KnowledgeActionConfig } from "../types.js";
-import { EmbeddedChunkRepository } from "../../repositories/EmbeddedChunkRepository.js";
+import { EmbeddedChunkRepository } from "../../../db/models/repositories/EmbeddedChunkRepository.js";
 import { embedTextsOpenAI } from "../utils/embedText.js";
 
 export async function handleSearchAction(

@@ -1,7 +1,7 @@
 import { SessionInfo } from "dynamic-mcp-server";
-import { UserRepository } from "../repositories/UserRepository.js";
-import { KnowledgeSourceRepository } from "../repositories/KnowledgeSourceRepository.js";
-import { IKnowledgeSource } from "../models/KnowledgeSource.js";
+import { UserRepository } from "../../db/models/repositories/UserRepository.js";
+import { KnowledgeSourceRepository } from "../../db/models/repositories/KnowledgeSourceRepository.js";
+import { IKnowledgeSource } from "../../db/models/KnowledgeSource.js";
 
 export interface KnowledgeSource {
   id: string;
