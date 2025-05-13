@@ -1,4 +1,4 @@
-import { UserRepository } from "../../../db/models/repositories/UserRepository.js";
+import { UserRepository } from "dynamic-mcp-server";
 
 const HTTP_PORT = process.env.KNOWLEDGE_HTTP_PORT || 3000;
 const MS_REDIRECT_URI = `http://localhost:${HTTP_PORT}/onedrive/oauth/callback`;
@@ -58,7 +58,7 @@ export async function exchangeCodeForTokens(code: string): Promise<{
   };
 }
 
-// Stores Microsoft tokens in the user's record
+// Stores Microsoft tokens in the user's record (in applicationAuthentication.microsoft)
 export async function storeMicrosoftTokens(
   email: string,
   tokens: { accessToken: string; refreshToken: string; expiresIn: number },
@@ -66,22 +66,25 @@ export async function storeMicrosoftTokens(
   const expiresAt = new Date(Date.now() + tokens.expiresIn * 1000);
   const userRepo = new UserRepository();
   await userRepo.updateUser(email, {
-    microsoftAuth: {
-      accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
-      expiresAt,
+    applicationAuthentication: {
+      microsoft: {
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        expiresAt,
+      },
     },
   });
 }
 
-// Retrieves Microsoft tokens from the user's record
+// Retrieves Microsoft tokens from the user's record (from applicationAuthentication.microsoft)
 export async function getMicrosoftTokens(email: string) {
   const userRepo = new UserRepository();
   const user = await userRepo.findByEmail(email);
-  if (!user?.microsoftAuth) {
+  const msAuth = user?.applicationAuthentication?.microsoft;
+  if (!msAuth) {
     throw new Error("User has not authorized Microsoft account.");
   }
-  return user.microsoftAuth;
+  return msAuth;
 }
 
 // Ensures a valid access token, refreshing if needed

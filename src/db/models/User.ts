@@ -1,41 +1,27 @@
 import mongoose from "mongoose";
-
-export interface IUser {
-  email: string; // Primary identifier
-  name?: string;
-  createdAt: Date;
-  updatedAt: Date;
-  knowledgeSources: string[]; // Array of knowledge source IDs
-  sharedKnowledgeSources: {
-    knowledgeSourceId: string;
-    sharedBy: string;
-    accessLevel: "read" | "write";
-    sharedAt: Date;
-  }[];
-  microsoftAuth?: {
-    accessToken: string;
-    refreshToken: string;
-    expiresAt: Date;
-  };
-}
+import { IUser } from "dynamic-mcp-server";
 
 const userSchema = new mongoose.Schema<IUser>(
   {
     email: { type: String, required: true, unique: true },
     name: { type: String },
-    knowledgeSources: [{ type: String }], // Array of knowledge source IDs
-    sharedKnowledgeSources: [
+    roles: [{ type: String }],
+    allowedTools: [{ type: String }],
+    sharedTools: [
       {
-        knowledgeSourceId: { type: String, required: true },
+        toolId: { type: String, required: true },
         sharedBy: { type: String, required: true },
         accessLevel: { type: String, enum: ["read", "write"], default: "read" },
         sharedAt: { type: Date, default: Date.now },
       },
     ],
-    microsoftAuth: {
-      accessToken: { type: String },
-      refreshToken: { type: String },
-      expiresAt: { type: Date },
+    applicationAuthentication: {
+      type: mongoose.Schema.Types.Mixed,
+      default: undefined,
+    },
+    applicationAuthorization: {
+      type: mongoose.Schema.Types.Mixed,
+      default: undefined,
     },
   },
   { timestamps: true },
@@ -50,7 +36,6 @@ userSchema.virtual("id").get(function (this: any) {
 userSchema.set("toJSON", { virtuals: true });
 userSchema.set("toObject", { virtuals: true });
 
-// Indexes
-userSchema.index({ "sharedKnowledgeSources.knowledgeSourceId": 1 });
+// Indexes for app-specific fields can be added as needed in downstream projects
 
 export const User = mongoose.model<IUser>("User", userSchema);

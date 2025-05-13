@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 
 export interface IKnowledgeSource {
+  _id?: string;
+  id?: string;
   name: string;
   description: string;
   sourceType: "onedrive";

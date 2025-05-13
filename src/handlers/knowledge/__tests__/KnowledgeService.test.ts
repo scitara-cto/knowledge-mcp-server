@@ -1,90 +1,84 @@
-import { jest, expect, describe, it, beforeEach } from "@jest/globals";
+import {
+  jest,
+  expect,
+  describe,
+  it,
+  beforeEach,
+  beforeAll,
+  afterAll,
+} from "@jest/globals";
 import { KnowledgeService } from "../KnowledgeService.js";
-import { UserRepository } from "../../repositories/UserRepository.js";
-import { KnowledgeSourceRepository } from "../../repositories/KnowledgeSourceRepository.js";
+import { KnowledgeSourceRepository } from "../../../db/models/repositories/KnowledgeSourceRepository.js";
 import { SessionInfo } from "dynamic-mcp-server";
 import mongoose from "mongoose";
+import { MongoMemoryServer } from "mongodb-memory-server";
+import { UserRepository } from "dynamic-mcp-server";
 
-// Mock MongoDB
+/* eslint-disable */
+// @ts-nocheck
 jest.mock("mongoose", () => ({
-  connect: jest.fn().mockResolvedValue(undefined),
+  connect: jest.fn().mockResolvedValue(undefined as any),
   connection: {
-    dropDatabase: jest.fn().mockResolvedValue(undefined),
+    dropDatabase: jest.fn().mockResolvedValue(undefined as any),
   },
 }));
 
-// Mock embedjs-mongodb
 jest.mock("@llm-tools/embedjs-mongodb", () => ({
   MongoDb: jest.fn().mockImplementation(() => ({
-    initialize: jest.fn().mockResolvedValue(undefined),
-    addDocument: jest.fn().mockResolvedValue(undefined),
-    search: jest.fn().mockResolvedValue([]),
-    reset: jest.fn().mockResolvedValue(undefined),
-    connect: jest.fn().mockResolvedValue(undefined),
-    disconnect: jest.fn().mockResolvedValue(undefined),
-    isConnected: jest.fn().mockReturnValue(true),
+    initialize: jest.fn().mockResolvedValue(undefined as any),
+    addDocument: jest.fn().mockResolvedValue(undefined as any),
+    search: jest.fn().mockResolvedValue([] as any),
+    reset: jest.fn().mockResolvedValue(undefined as any),
+    connect: jest.fn().mockResolvedValue(undefined as any),
+    disconnect: jest.fn().mockResolvedValue(undefined as any),
+    isConnected: jest.fn().mockReturnValue(true as any),
   })),
 }));
 
-// Mock OpenAI embeddings
 jest.mock("@llm-tools/embedjs-openai", () => ({
   OpenAiEmbeddings: jest.fn().mockImplementation(() => ({
-    embed: jest.fn().mockResolvedValue([0.1, 0.2, 0.3]),
-    initialize: jest.fn().mockResolvedValue(undefined),
+    embed: jest.fn().mockResolvedValue([0.1, 0.2, 0.3] as any),
+    initialize: jest.fn().mockResolvedValue(undefined as any),
   })),
 }));
 
-// Mock WebLoader
 jest.mock("@llm-tools/embedjs-loader-web", () => ({
   WebLoader: jest.fn().mockImplementation(() => ({
-    load: jest.fn().mockResolvedValue([]),
-    initialize: jest.fn().mockResolvedValue(undefined),
+    load: jest.fn().mockResolvedValue([] as any),
+    initialize: jest.fn().mockResolvedValue(undefined as any),
   })),
 }));
 
-// Mock RAG application
 jest.mock("@llm-tools/embedjs", () => ({
   RAGApplicationBuilder: jest.fn().mockImplementation(() => ({
     setEmbeddingModel: jest.fn().mockReturnThis(),
     setVectorDatabase: jest.fn().mockReturnThis(),
     build: jest.fn().mockResolvedValue({
-      addLoader: jest.fn().mockResolvedValue(undefined),
-      query: jest.fn().mockResolvedValue([]),
-      reset: jest.fn().mockResolvedValue(undefined),
-      initialize: jest.fn().mockResolvedValue(undefined),
+      addLoader: jest.fn().mockResolvedValue(undefined as any),
+      query: jest.fn().mockResolvedValue([] as any),
+      reset: jest.fn().mockResolvedValue(undefined as any),
+      initialize: jest.fn().mockResolvedValue(undefined as any),
     }),
   })),
 }));
 
 // Create mock instances
-const mockUserRepo = {
+const mockUserRepo: Partial<UserRepository> = {
   findByEmail: jest.fn(),
   create: jest.fn(),
   addKnowledgeSource: jest.fn(),
   shareKnowledgeSource: jest.fn(),
   hasAccessToKnowledgeSource: jest.fn(),
-  getUserByEmail: jest.fn(),
+  updateUser: jest.fn(),
 };
 
-const mockKnowledgeSourceRepo = {
+const mockKnowledgeSourceRepo: Partial<KnowledgeSourceRepository> = {
   findById: jest.fn(),
   create: jest.fn(),
   updateStatus: jest.fn(),
   searchDocuments: jest.fn(),
-  createKnowledgeSource: jest.fn(),
   getKnowledgeSourceById: jest.fn(),
 };
-
-// Mock the repositories and OpenAI embeddings
-jest.mock("../../repositories/UserRepository.js", () => ({
-  UserRepository: jest.fn().mockImplementation(() => mockUserRepo),
-}));
-
-jest.mock("../../repositories/KnowledgeSourceRepository.js", () => ({
-  KnowledgeSourceRepository: jest
-    .fn()
-    .mockImplementation(() => mockKnowledgeSourceRepo),
-}));
 
 // Mock process.env for OpenAI API key and MongoDB connection
 process.env.OPENAI_API_KEY = "test-api-key";
@@ -92,6 +86,8 @@ process.env.MONGODB_URI = "mongodb://localhost:27017/test";
 
 describe("KnowledgeService", () => {
   let service: KnowledgeService;
+  let mongoServer: MongoMemoryServer;
+  let knowledgeSourceRepo: KnowledgeSourceRepository;
   const mockSessionInfo: SessionInfo = {
     user: {
       email: "test@example.com",
@@ -100,18 +96,20 @@ describe("KnowledgeService", () => {
       sub: "test-sub",
       clientId: "test-client",
       scopes: [],
+      preferred_username: "testuser",
+      scope: "",
+      aud: "",
     },
   };
 
   beforeEach(async () => {
-    // Clear all mocks
     jest.clearAllMocks();
-
-    // Clear the database
     await mongoose.connection.dropDatabase();
-
-    // Create and initialize service
-    service = new KnowledgeService();
+    knowledgeSourceRepo = new KnowledgeSourceRepository();
+    service = new KnowledgeService(
+      mockUserRepo as unknown as UserRepository,
+      mockKnowledgeSourceRepo as unknown as KnowledgeSourceRepository,
+    );
   }, 30000);
 
   describe("addKnowledgeSource", () => {
@@ -119,7 +117,15 @@ describe("KnowledgeService", () => {
       const mockUser = {
         email: "test@example.com",
         name: "Test User",
-        sharedKnowledgeSources: [],
+        applicationAuthorization: {
+          knowledge: {
+            owned: [],
+            shared: [],
+          },
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        sharedTools: [],
       };
 
       const mockKnowledgeSource = {
@@ -127,24 +133,31 @@ describe("KnowledgeService", () => {
         id: "test-id",
         name: "Test Knowledge Source",
         description: "Test Description",
-        sourceType: "website",
+        sourceType: "onedrive",
         sourceUrl: "https://example.com",
         createdBy: "test@example.com",
         status: "ready",
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
-      mockUserRepo.getUserByEmail.mockResolvedValue(null);
-      mockUserRepo.create.mockResolvedValue(mockUser);
-      mockKnowledgeSourceRepo.createKnowledgeSource.mockResolvedValue(
-        mockKnowledgeSource,
-      );
+      mockUserRepo.findByEmail = jest.fn((email) => {
+        if (email === "test@example.com") return Promise.resolve(mockUser);
+        return Promise.resolve(null);
+      });
+      mockUserRepo.create = jest.fn().mockResolvedValue(mockUser);
+      mockKnowledgeSourceRepo.create = jest
+        .fn()
+        .mockResolvedValue(mockKnowledgeSource);
 
       const result = await service.addKnowledgeSource(
         {
           name: "Test Knowledge Source",
           description: "Test Description",
-          sourceType: "website",
+          sourceType: "onedrive",
           sourceUrl: "https://example.com",
+          status: "ready",
+          createdBy: "test@example.com",
         },
         mockSessionInfo,
       );
@@ -152,7 +165,7 @@ describe("KnowledgeService", () => {
       expect(result).toBeDefined();
       expect(result.name).toBe("Test Knowledge Source");
       expect(result.description).toBe("Test Description");
-      expect(result.sourceType).toBe("website");
+      expect(result.sourceType).toBe("onedrive");
       expect(result.sourceUrl).toBe("https://example.com");
       expect(result.createdBy).toBe("test@example.com");
       expect(result.status).toBe("ready");
@@ -164,8 +177,10 @@ describe("KnowledgeService", () => {
           {
             name: "Test Knowledge Source",
             description: "Test Description",
-            sourceType: "website",
+            sourceType: "onedrive",
             sourceUrl: "https://example.com",
+            status: "ready",
+            createdBy: "test@example.com",
           },
           { user: { email: "" } } as SessionInfo,
         ),
@@ -178,14 +193,29 @@ describe("KnowledgeService", () => {
       const mockOwner = {
         email: "owner@example.com",
         name: "Owner User",
-        sharedKnowledgeSources: [],
-        knowledgeSources: ["test-id"],
+        applicationAuthorization: {
+          knowledge: {
+            owned: ["test-id"],
+            shared: [],
+          },
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        sharedTools: [],
       };
 
       const mockTarget = {
         email: "target@example.com",
         name: "Target User",
-        sharedKnowledgeSources: [],
+        applicationAuthorization: {
+          knowledge: {
+            owned: [],
+            shared: [],
+          },
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        sharedTools: [],
       };
 
       const mockKnowledgeSource = {
@@ -193,19 +223,26 @@ describe("KnowledgeService", () => {
         id: "test-id",
         name: "Test Knowledge Source",
         createdBy: "owner@example.com",
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
-      mockUserRepo.getUserByEmail.mockImplementation((email) => {
-        if (email === "owner@example.com") return Promise.resolve(mockOwner);
-        if (email === "target@example.com") return Promise.resolve(mockTarget);
-        return Promise.resolve(null);
-      });
-
-      mockKnowledgeSourceRepo.getKnowledgeSourceById.mockResolvedValue(
-        mockKnowledgeSource,
-      );
-      mockUserRepo.shareKnowledgeSource.mockResolvedValue(mockTarget);
-      mockUserRepo.hasAccessToKnowledgeSource.mockResolvedValue(true);
+      const userRepo: any = {
+        findByEmail: jest.fn((email) => {
+          if (email === "owner@example.com") return Promise.resolve(mockOwner);
+          if (email === "target@example.com")
+            return Promise.resolve(mockTarget);
+          return Promise.resolve(null);
+        }),
+        hasAccessToKnowledgeSource: jest.fn().mockResolvedValue(true),
+        updateUser: jest.fn().mockResolvedValue(mockTarget),
+      };
+      const knowledgeSourceRepo: any = {
+        getKnowledgeSourceById: jest
+          .fn()
+          .mockResolvedValue(mockKnowledgeSource),
+      };
+      service = new KnowledgeService(userRepo, knowledgeSourceRepo);
 
       await service.shareKnowledgeSource(
         "owner@example.com",
@@ -214,10 +251,21 @@ describe("KnowledgeService", () => {
         "read",
       );
 
-      expect(mockUserRepo.shareKnowledgeSource).toHaveBeenCalledWith(
+      expect(userRepo.updateUser).toHaveBeenCalledWith(
         "target@example.com",
-        "test-id",
-        "read",
+        expect.objectContaining({
+          applicationAuthorization: expect.objectContaining({
+            knowledge: expect.objectContaining({
+              shared: expect.arrayContaining([
+                expect.objectContaining({
+                  knowledgeSourceId: "test-id",
+                  accessLevel: "read",
+                  sharedBy: "owner@example.com",
+                }),
+              ]),
+            }),
+          }),
+        }),
       );
     }, 10000);
 
@@ -225,22 +273,54 @@ describe("KnowledgeService", () => {
       const mockOwner = {
         email: "owner@example.com",
         name: "Owner User",
-        sharedKnowledgeSources: [],
-        knowledgeSources: [],
+        applicationAuthorization: {
+          knowledge: {
+            owned: [],
+            shared: [],
+          },
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        sharedTools: [],
       };
-
+      const mockTarget = {
+        email: "target@example.com",
+        name: "Target User",
+        applicationAuthorization: {
+          knowledge: {
+            owned: [],
+            shared: [],
+          },
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        sharedTools: [],
+      };
       const mockKnowledgeSource = {
         _id: "test-id",
         id: "test-id",
         name: "Test Knowledge Source",
         createdBy: "different@example.com",
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
-      mockUserRepo.getUserByEmail.mockResolvedValue(mockOwner);
-      mockKnowledgeSourceRepo.getKnowledgeSourceById.mockResolvedValue(
-        mockKnowledgeSource,
-      );
-      mockUserRepo.hasAccessToKnowledgeSource.mockResolvedValue(false);
+      const userRepo: any = {
+        findByEmail: jest.fn((email) => {
+          if (email === "owner@example.com") return Promise.resolve(mockOwner);
+          if (email === "target@example.com")
+            return Promise.resolve(mockTarget);
+          return Promise.resolve(null);
+        }),
+        hasAccessToKnowledgeSource: jest.fn().mockResolvedValue(false),
+        updateUser: jest.fn().mockResolvedValue(mockTarget),
+      };
+      const knowledgeSourceRepo: any = {
+        getKnowledgeSourceById: jest
+          .fn()
+          .mockResolvedValue(mockKnowledgeSource),
+      };
+      service = new KnowledgeService(userRepo, knowledgeSourceRepo);
 
       await expect(
         service.shareKnowledgeSource(
@@ -256,14 +336,17 @@ describe("KnowledgeService", () => {
   describe("searchDocuments", () => {
     it("should return search results when user has access", async () => {
       const mockUser = {
-        email: "test@example.com",
+        email: "test-client",
         name: "Test User",
-        sharedKnowledgeSources: [
-          {
-            knowledgeSourceId: "test-id",
-            accessLevel: "read",
+        applicationAuthorization: {
+          knowledge: {
+            owned: ["test-id"],
+            shared: [],
           },
-        ],
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        sharedTools: [],
       };
 
       const mockResults = [
@@ -279,9 +362,16 @@ describe("KnowledgeService", () => {
         },
       ];
 
-      mockUserRepo.getUserByEmail.mockResolvedValue(mockUser);
-      mockKnowledgeSourceRepo.searchDocuments.mockResolvedValue(mockResults);
-      mockUserRepo.hasAccessToKnowledgeSource.mockResolvedValue(true);
+      mockUserRepo.findByEmail = jest.fn((email) => {
+        if (email === "test-client") return Promise.resolve(mockUser);
+        return Promise.resolve(null);
+      });
+      mockKnowledgeSourceRepo.searchDocuments = jest
+        .fn()
+        .mockResolvedValue(mockResults);
+      mockUserRepo.hasAccessToKnowledgeSource = jest
+        .fn()
+        .mockResolvedValue(true);
 
       const results = await service.searchDocuments("test query", {
         knowledgeSourceId: "test-id",
@@ -297,13 +387,26 @@ describe("KnowledgeService", () => {
 
     it("should throw error if user does not have access to the knowledge source", async () => {
       const mockUser = {
-        email: "test@example.com",
+        email: "test-client",
         name: "Test User",
-        sharedKnowledgeSources: [],
+        applicationAuthorization: {
+          knowledge: {
+            owned: [],
+            shared: [],
+          },
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        sharedTools: [],
       };
 
-      mockUserRepo.getUserByEmail.mockResolvedValue(mockUser);
-      mockUserRepo.hasAccessToKnowledgeSource.mockResolvedValue(false);
+      mockUserRepo.findByEmail = jest.fn((email) => {
+        if (email === "test-client") return Promise.resolve(mockUser);
+        return Promise.resolve(null);
+      });
+      mockUserRepo.hasAccessToKnowledgeSource = jest
+        .fn()
+        .mockResolvedValue(false);
 
       await expect(
         service.searchDocuments("test query", {

@@ -74,7 +74,10 @@ export async function handleUseKnowledgeSourceAction(
     };
 
     // Register the tool
-    await context.mcpServer.toolGenerator.registerTool(toolDefinition);
+    await context.mcpServer.toolGenerator.addTool(
+      toolDefinition,
+      context.user?.email || "system",
+    );
 
     return {
       result: {

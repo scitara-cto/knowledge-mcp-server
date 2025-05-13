@@ -1,7 +1,6 @@
 import { DynamicMcpServer, logger } from "dynamic-mcp-server";
 import knowledgeHandler from "./handlers/knowledge/index.js";
-import { connectToDatabase } from "./db/connection.js";
-import { startHttpServer } from "./http/httpServer.js";
+import { registerCustomRoutes } from "./http/httpServer.js";
 
 // Setup server with knowledge handler
 const server = new DynamicMcpServer({
@@ -15,15 +14,12 @@ server.registerHandler(knowledgeHandler);
 // Start the server
 async function startServer() {
   try {
-    // Connect to database first
-    await connectToDatabase();
-
-    // Then start the MCP server
+    // Start the MCP server
     await server.start();
     logger.info("Knowledge MCP Server started");
 
-    // Start HTTP server for OAuth and HTTP endpoints
-    startHttpServer();
+    // Register custom HTTP routes (OAuth, health, etc.)
+    registerCustomRoutes(server);
   } catch (error) {
     logger.error("Failed to start server:", error);
     process.exit(1);
