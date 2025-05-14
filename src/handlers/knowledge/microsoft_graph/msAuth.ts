@@ -1,7 +1,6 @@
 import { UserRepository } from "dynamic-mcp-server";
 
-const HTTP_PORT = process.env.KNOWLEDGE_HTTP_PORT || 3000;
-const MS_REDIRECT_URI = `http://localhost:${HTTP_PORT}/onedrive/oauth/callback`;
+const MS_REDIRECT_URI = `http://localhost:${process.env.AUTH_PORT}/onedrive/oauth/callback`;
 const MS_CLIENT_ID = process.env.MICROSOFT_CLIENT_ID!;
 const MS_CLIENT_SECRET = process.env.MICROSOFT_CLIENT_SECRET!;
 const MS_TENANT_ID = process.env.MICROSOFT_TENANT_ID!;

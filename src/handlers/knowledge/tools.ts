@@ -22,6 +22,7 @@ export const tools: ToolDefinition[] = [
       },
       required: ["name", "description", "path"],
     },
+    rolesPermitted: ["power-user", "admin"],
     annotations: {
       title: "Add Knowledge",
       readOnlyHint: false,
@@ -58,6 +59,7 @@ export const tools: ToolDefinition[] = [
       },
       required: ["query", "knowledgeSourceId"],
     },
+    rolesPermitted: ["user", "power-user", "admin"],
     annotations: {
       title: "Search Knowledge",
       readOnlyHint: true,
@@ -96,6 +98,7 @@ export const tools: ToolDefinition[] = [
       },
       required: ["knowledgeSourceId", "toolName", "toolDescription"],
     },
+    rolesPermitted: ["power-user", "admin"],
     annotations: {
       title: "Use Knowledge Source",
       readOnlyHint: false,
@@ -129,6 +132,7 @@ export const tools: ToolDefinition[] = [
       },
       required: ["knowledgeSourceId"],
     },
+    rolesPermitted: ["power-user", "admin"],
     annotations: {
       title: "Refresh Knowledge Source",
       readOnlyHint: false,
@@ -166,6 +170,7 @@ export const tools: ToolDefinition[] = [
       },
       required: ["knowledgeSourceId", "targetEmail"],
     },
+    rolesPermitted: ["power-user", "admin"],
     annotations: {
       title: "Share Knowledge Source",
       readOnlyHint: false,
@@ -203,6 +208,7 @@ export const tools: ToolDefinition[] = [
       },
       required: ["query"],
     },
+    rolesPermitted: ["user", "power-user", "admin"],
     handler: {
       type: "knowledge",
       config: {
@@ -229,6 +235,7 @@ export const tools: ToolDefinition[] = [
       },
       required: ["fileId"],
     },
+    rolesPermitted: ["user", "power-user", "admin"],
     handler: {
       type: "knowledge",
       config: {
@@ -246,6 +253,7 @@ export const tools: ToolDefinition[] = [
       },
       required: ["name"],
     },
+    rolesPermitted: ["power-user", "admin"],
     annotations: {
       title: "Delete Knowledge Source",
       destructiveHint: true,
@@ -275,6 +283,7 @@ export const tools: ToolDefinition[] = [
       },
       required: [],
     },
+    rolesPermitted: ["power-user", "admin"],
     annotations: {
       title: "List Knowledge Sources",
       readOnlyHint: true,
@@ -289,5 +298,4 @@ export const tools: ToolDefinition[] = [
       },
     },
   },
-  // TODO: Define OneDrive-only tools here (search-onedrive-files, retrieve-onedrive-file, etc.)
 ];

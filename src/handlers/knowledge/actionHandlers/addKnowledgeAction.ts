@@ -130,6 +130,23 @@ export async function handleAddKnowledgeAction(
     files = await listFilesFromOneDrive(userEmail, path);
   } catch (err: any) {
     logger.error(`[add-knowledge] Error listing files: ${err.message}`);
+    if (
+      err.message &&
+      err.message.includes("User has not authorized Microsoft account")
+    ) {
+      const { getMicrosoftAuthUrl } = await import(
+        "../microsoft_graph/msAuth.js"
+      );
+      return {
+        result: { authUrl: getMicrosoftAuthUrl(userEmail) },
+        message:
+          "Please follow this authentication link to authorize OneDrive access.",
+        nextSteps: [
+          "Instruct the user to follow this authentication link.",
+          "Re-try the last tool after the user has provided feedback that they have successfully authenticated.",
+        ],
+      };
+    }
     return {
       result: null,
       message: `Failed to list files: ${err.message}`,
