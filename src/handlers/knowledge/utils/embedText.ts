@@ -26,6 +26,7 @@ export async function embedTextOpenAI(text: string): Promise<number[]> {
 
 /**
  * Get embedding vectors for an array of texts using OpenAI's API.
+ * Now expects batching to be handled by the caller.
  */
 export async function embedTextsOpenAI(texts: string[]): Promise<number[][]> {
   const response = await fetch("https://api.openai.com/v1/embeddings", {

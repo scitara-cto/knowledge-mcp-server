@@ -55,6 +55,7 @@ knowledgeSourceSchema.set("toObject", { virtuals: true });
 // Indexes
 knowledgeSourceSchema.index({ createdBy: 1 });
 knowledgeSourceSchema.index({ status: 1 });
+knowledgeSourceSchema.index({ name: 1, createdBy: 1 }, { unique: true });
 
 export const KnowledgeSource = mongoose.model<IKnowledgeSource>(
   "KnowledgeSource",
