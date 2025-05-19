@@ -32,12 +32,6 @@ export async function handleUseKnowledgeSourceAction(
       );
     }
 
-    // Check for duplicate tool name
-    const existingTool = context.mcpServer.toolGenerator.getTool(toolName);
-    if (existingTool) {
-      throw new Error(`A tool with the name '${toolName}' already exists.`);
-    }
-
     // Create a specialized tool for this knowledge source
     const toolDefinition: ToolDefinition = {
       name: toolName,
@@ -74,7 +68,7 @@ export async function handleUseKnowledgeSourceAction(
     };
 
     // Register the tool
-    await context.mcpServer.toolGenerator.addTool(
+    await context.mcpServer.toolService.addTool(
       toolDefinition,
       context.user?.email || "system",
     );

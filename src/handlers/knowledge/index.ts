@@ -1,68 +1,65 @@
-import { HandlerOutput, SessionInfo, logger } from "dynamic-mcp-server";
+// If import fails, define types locally as a workaround
+// import type { HandlerFunction, HandlerPackage } from "dynamic-mcp-server/dist/mcp/types";
+type HandlerFunction = (
+  args: Record<string, any>,
+  context: any,
+  config: any,
+) => Promise<any>;
+interface HandlerPackage {
+  name: string;
+  tools: any[];
+  handler: HandlerFunction;
+}
 import { tools as knowledgeTools } from "./tools.js";
 import { handleAddKnowledgeAction } from "./actionHandlers/addKnowledgeAction.js";
 import { handleSearchAction } from "./actionHandlers/searchAction.js";
 import { handleUseKnowledgeSourceAction } from "./actionHandlers/useKnowledgeSourceAction.js";
 import { handleRefreshKnowledgeSourceAction } from "./actionHandlers/refreshKnowledgeSourceAction.js";
 import { handleShareKnowledgeSourceAction } from "./actionHandlers/shareKnowledgeSourceAction.js";
-import { KnowledgeActionConfig } from "./types.js";
 import searchOnedriveFilesAction from "./actionHandlers/searchOnedriveFilesAction.js";
 import retrieveOnedriveFileAction from "./actionHandlers/retrieveOnedriveFileAction.js";
 import { handleDeleteKnowledgeSourceAction } from "./actionHandlers/deleteKnowledgeSourceAction.js";
 import { handleListKnowledgeSourcesAction } from "./actionHandlers/listKnowledgeSourcesAction.js";
+import { logger } from "dynamic-mcp-server";
 
-const actionHandlers: Record<
-  string,
-  (
-    args: Record<string, any>,
-    context: SessionInfo,
-    actionConfig: KnowledgeActionConfig,
-  ) => Promise<HandlerOutput>
-> = {
-  "add-knowledge": handleAddKnowledgeAction,
-  "search": handleSearchAction,
-  "use-knowledge-source": handleUseKnowledgeSourceAction,
-  "refresh-knowledge-source": handleRefreshKnowledgeSourceAction,
-  "share-knowledge-source": handleShareKnowledgeSourceAction,
-  "search-onedrive-files": searchOnedriveFilesAction,
-  "retrieve-onedrive-file": retrieveOnedriveFileAction,
-  "delete-knowledge-source": handleDeleteKnowledgeSourceAction,
-  "list-knowledge-sources": handleListKnowledgeSourcesAction,
-};
-
-/**
- * Knowledge handler for managing knowledge sources and performing searches
- * @param args The arguments passed to the tool
- * @param context The session context containing authentication information
- * @param actionConfig The handler configuration from the tool definition
- * @returns A promise that resolves to the tool output
- */
-export async function knowledgeHandler(
+const knowledgeHandler: HandlerFunction = async (
   args: Record<string, any>,
-  context: SessionInfo,
-  actionConfig: KnowledgeActionConfig,
-): Promise<HandlerOutput> {
+  context: any,
+  config: any,
+) => {
+  const action = config.action;
   try {
-    const handler = actionHandlers[actionConfig.action];
-    if (!handler) {
-      throw new Error(`Unknown action: ${actionConfig.action}`);
+    if (action === "add-knowledge") {
+      return await handleAddKnowledgeAction(args, context, config);
+    } else if (action === "search") {
+      return await handleSearchAction(args, context, config);
+    } else if (action === "use-knowledge-source") {
+      return await handleUseKnowledgeSourceAction(args, context, config);
+    } else if (action === "refresh-knowledge-source") {
+      return await handleRefreshKnowledgeSourceAction(args, context, config);
+    } else if (action === "share-knowledge-source") {
+      return await handleShareKnowledgeSourceAction(args, context, config);
+    } else if (action === "search-onedrive-files") {
+      return await searchOnedriveFilesAction(args, context, config);
+    } else if (action === "retrieve-onedrive-file") {
+      return await retrieveOnedriveFileAction(args, context, config);
+    } else if (action === "delete-knowledge-source") {
+      return await handleDeleteKnowledgeSourceAction(args, context, config);
+    } else if (action === "list-knowledge-sources") {
+      return await handleListKnowledgeSourcesAction(args, context, config);
+    } else {
+      throw new Error(`Unknown action: ${action}`);
     }
-    return await handler(args, context, actionConfig);
   } catch (error) {
     logger.error(`Knowledge handler error: ${error}`);
-    if (error instanceof Error) {
-      // Check if the error is already a Knowledge API Request Error
-      if (error.message.startsWith("Knowledge API Request Error:")) {
-        throw error;
-      }
-      throw new Error(`Knowledge API Request Error: ${error.message}`);
-    }
-    throw new Error(`Knowledge API Request Error: ${String(error)}`);
+    throw error;
   }
-}
+};
 
-export default {
+const knowledgeHandlerPackage: HandlerPackage = {
   name: "knowledge",
   tools: knowledgeTools,
   handler: knowledgeHandler,
 };
+
+export default knowledgeHandlerPackage;
