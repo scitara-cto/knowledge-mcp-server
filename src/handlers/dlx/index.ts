@@ -14,6 +14,7 @@ import { tools } from "./tools.js";
 import { handleApiCallAction } from "./actionHandlers/apiCallAction.js";
 import { handleUseConnectionAction } from "./actionHandlers/useConnectionAction.js";
 import { handleUseOrchestrationAction } from "./actionHandlers/useOrchestrationAction.js";
+import { triggerOrchestrationAction } from "./actionHandlers/triggerOrchestrationAction.js";
 import { logger } from "dynamic-mcp-server";
 
 const dlxHandler: HandlerFunction = async (
@@ -31,6 +32,8 @@ const dlxHandler: HandlerFunction = async (
       return await handleUseConnectionAction(args, context, config);
     } else if (action === "use-orchestration") {
       return await handleUseOrchestrationAction(args, context, config);
+    } else if (action === "trigger-orchestration") {
+      return await triggerOrchestrationAction(args, context, config);
     } else {
       throw new Error(`Unknown action: ${action}`);
     }

@@ -113,6 +113,7 @@ export async function handleUseConnectionAction(
           idempotentHint: true,
           openWorldHint: true,
         },
+        rolesPermitted: ["admin", "power-user", "user"],
         handler: {
           type: "dlx",
           config: {

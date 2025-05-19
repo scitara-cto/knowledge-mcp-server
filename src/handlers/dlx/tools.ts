@@ -17,6 +17,7 @@ export const tools: ToolDefinition[] = [
       idempotentHint: true,
       openWorldHint: true,
     },
+    rolesPermitted: ["admin", "power-user", "user"],
     handler: {
       type: "dlx",
       config: {
@@ -54,6 +55,7 @@ export const tools: ToolDefinition[] = [
       idempotentHint: true,
       openWorldHint: true,
     },
+    rolesPermitted: ["admin", "power-user", "user"],
     handler: {
       type: "dlx",
       config: {
@@ -78,6 +80,7 @@ export const tools: ToolDefinition[] = [
       idempotentHint: true,
       openWorldHint: true,
     },
+    rolesPermitted: ["admin", "power-user", "user"],
     handler: {
       type: "dlx",
       config: {
@@ -111,6 +114,7 @@ export const tools: ToolDefinition[] = [
       idempotentHint: true,
       openWorldHint: true,
     },
+    rolesPermitted: ["admin", "power-user", "user"],
     handler: {
       type: "dlx",
       config: {

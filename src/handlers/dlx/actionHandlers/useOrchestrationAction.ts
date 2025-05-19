@@ -1,6 +1,7 @@
 import { DlxService } from "../DlxService.js";
 import { HandlerOutput, SessionInfo, logger } from "dynamic-mcp-server";
 import { ToolDefinition } from "dynamic-mcp-server";
+import { triggerOrchestrationAction } from "./triggerOrchestrationAction.js";
 
 interface Orchestration {
   id: string;
@@ -58,7 +59,7 @@ export async function handleUseOrchestrationAction(
       throw new Error(`Orchestration with ID ${orchestrationId} not found`);
     }
 
-    // Create a tool definition for triggering this orchestration using the api-call action
+    // Create a tool definition for triggering this orchestration using the new triggerOrchestrationAction
     const toolDefinition: ToolDefinition = {
       name: `trigger-${orchestrationResponse.name
         .toLowerCase()
@@ -84,14 +85,12 @@ export async function handleUseOrchestrationAction(
         idempotentHint: true,
         openWorldHint: true,
       },
+      rolesPermitted: ["admin", "power-user", "user"],
       handler: {
         type: "dlx",
         config: {
-          action: "api-call",
-          method: "POST",
-          path: `/orchestrations/${orchestrationId}/trigger`,
-          body: "data",
-          successMessage: `Triggered orchestration: ${orchestrationResponse.name}`,
+          action: "trigger-orchestration",
+          orchestrationId,
         },
       },
     };
