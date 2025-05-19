@@ -18,9 +18,9 @@ export class DlxService {
     { method, path, params, data }: DlxApiCallParams,
     sessionInfo: SessionInfo,
   ): Promise<unknown> {
-    // Extract token and DLX API URL from sessionInfo or user info
-    const token = sessionInfo.user.dlx_api_key || sessionInfo.token;
-    const dlxApiUrl = sessionInfo.user.dlx_api_url;
+    // Extract token and DLX API URL from sessionInfo.user or sessionInfo.user.claims
+    const token = sessionInfo.user?.claims?.dlx_api_key || sessionInfo.token;
+    const dlxApiUrl = sessionInfo.user?.claims?.dlx_api_url;
 
     if (!dlxApiUrl) {
       throw new Error("DLX API URL is required for DLX API call");
